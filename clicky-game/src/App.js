@@ -11,8 +11,52 @@ class App extends Component {
     currentScore: 0,
     highScore: 0,
     message: "",
-    array: []
+    array: [],
+    lastClickedId: null,
   };
+
+
+  handleCardClick = id => {
+    const { currentScore: oldScore, highScore: oldHighScore, lastClickedId, friends } = this.state;
+    const newCurrentScore = oldScore + 1;
+    const newHighScore = newCurrentScore > oldHighScore ? oldHighScore + 1 : oldHighScore;
+    let newState = {};
+
+    //logic for current score and high score
+    if (!lastClickedId) {
+      newState = {
+        lastClickedId: id,
+        currentScore: newCurrentScore,
+        highScore: newHighScore,
+      };
+    }
+    else {
+      if (id === lastClickedId) {
+        newState = {
+          currentScore: 0,
+          lastClickedId: null
+        }
+      }
+      else {
+        newState = {
+          currentScore: newCurrentScore,
+          highScore: newHighScore, 
+          lastClickedId: id
+        }
+      }
+    }
+
+
+
+    const friendsCopy = [...friends];
+    const shuffledFriends = this.shuffle(friendsCopy);
+    newState = {
+      ...newState,
+      friends: shuffledFriends
+    }
+
+    this.setState(newState);
+  }
 
 
   // We create the shuffle function to be called later
@@ -28,7 +72,7 @@ class App extends Component {
       array[currentIndex] = array[randomIndex];
       array[randomIndex] = temporaryValue;
     }
-    console.log(array)
+
     return array;
   }
 
@@ -42,19 +86,18 @@ class App extends Component {
 
   // Map over this.state.friends and render a FriendCard component for each friend object
   render() {
+    console.log(this.state);
     return (
       <Wrapper>
-        
+
         <Title>Friends List</Title>
+        <p>Current Score: {this.state.currentScore}</p>
+        <p>High Score: {this.state.highScore}</p>
         {this.state.friends.map(friend => (
           <FriendCard
-            removeFriend={this.removeFriend}
-            id={friend.id}
             key={friend.id}
-            name={friend.name}
-            image={friend.image}
-            occupation={friend.occupation}
-            location={friend.location}
+            handler={this.handleCardClick}
+            {...friend}
           />
         ))}
       </Wrapper>
